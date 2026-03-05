@@ -6,9 +6,12 @@ import toast from "react-hot-toast";
 export default function Login() {
   const router = useRouter();
   const [form, setForm] = useState({ email: "", password: "" });
+  const [loading, setLoading] = useState(false);
 
   const handleLogin = async (e) => {
     e.preventDefault();
+
+    setLoading(true);
 
     const res = await fetch("/api/auth/login", {
       method: "POST",
@@ -19,6 +22,8 @@ export default function Login() {
     });
 
     const data = await res.json();
+
+    setLoading(false);
 
     if (res.ok) {
       toast.success("Login successful");
@@ -31,7 +36,6 @@ export default function Login() {
   return (
     <div className="flex items-center justify-center min-h-screen bg-gray-100 px-4">
       <div className="bg-white p-8 rounded-xl shadow-lg w-full max-w-md text-black">
-
         <h2 className="text-2xl font-bold mb-6 text-center">Login</h2>
 
         <input
@@ -51,7 +55,13 @@ export default function Login() {
           onClick={handleLogin}
           className="w-full bg-blue-600 text-white py-3 rounded-lg hover:bg-blue-700 hover:cursor-pointer"
         >
-          Login
+          {loading ? (
+            <>
+              Logging in...
+            </>
+          ) : (
+            "Login"
+          )}
         </button>
 
         <p className="text-center mt-4 text-sm">
@@ -63,7 +73,6 @@ export default function Login() {
             Sign Up
           </span>
         </p>
-
       </div>
     </div>
   );

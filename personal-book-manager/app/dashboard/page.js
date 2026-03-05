@@ -20,19 +20,22 @@ export default function Dashboard() {
 
   const [books, setBooks] = useState([]);
   const [filter, setFilter] = useState("all");
+  const [loadingBooks, setLoadingBooks] = useState(true);
 
   // Fetch books
   const fetchBooks = async () => {
     try {
+      setLoadingBooks(true);
       const data = await fetchBooksAPI();
       setBooks(data);
     } catch {
       toast.error("Failed to load books");
+    } finally {
+      setLoadingBooks(false);
     }
   };
 
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
     fetchBooks();
   }, []);
 
@@ -64,9 +67,7 @@ export default function Dashboard() {
       await updateBookStatusAPI(id, status);
 
       setBooks((prev) =>
-        prev.map((book) =>
-          book._id === id ? { ...book, status } : book
-        )
+        prev.map((book) => (book._id === id ? { ...book, status } : book)),
       );
 
       toast.success("Status updated");
@@ -83,13 +84,10 @@ export default function Dashboard() {
   };
 
   const filteredBooks =
-    filter === "all"
-      ? books
-      : books.filter((book) => book.status === filter);
+    filter === "all" ? books : books.filter((book) => book.status === filter);
 
   return (
     <div className="bg-gray-50 min-h-screen text-black">
-
       {/* Header */}
 
       <div className="flex justify-between items-center mb-10 shadow-lg p-6">
@@ -116,13 +114,17 @@ export default function Dashboard() {
       />
 
       {/* Books */}
-
-      <BookGrid
-        books={filteredBooks}
-        deleteBook={deleteBook}
-        updateStatus={updateStatus}
-      />
-
+      {loadingBooks ? (
+        <div className="flex justify-center mt-20">
+          <div className="w-10 h-10 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+        </div>
+      ) : (
+        <BookGrid
+          books={filteredBooks}
+          deleteBook={deleteBook}
+          updateStatus={updateStatus}
+        />
+      )}
     </div>
   );
 }
