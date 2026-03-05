@@ -15,6 +15,12 @@ export default function Signup() {
   });
 
   const handleSignup = async () => {
+
+    if(!form.name || !form.email || !form.password ){
+       toast.error("Please enter all Details");
+        return;
+    }
+
     setLoading(true);
 
     const res = await fetch("/api/auth/signup", {
@@ -24,7 +30,7 @@ export default function Signup() {
       },
       body: JSON.stringify(form),
     });
-    
+
     const data = await res.json();
 
     setLoading(false);

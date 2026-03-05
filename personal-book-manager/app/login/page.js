@@ -11,6 +11,11 @@ export default function Login() {
   const handleLogin = async (e) => {
     e.preventDefault();
 
+    if (!form.email || !form.password) {
+      toast.error("Please enter Email and Password ");
+      return;
+    }
+
     setLoading(true);
 
     const res = await fetch("/api/auth/login", {
@@ -55,13 +60,7 @@ export default function Login() {
           onClick={handleLogin}
           className="w-full bg-blue-600 text-white py-3 rounded-lg hover:bg-blue-700 hover:cursor-pointer"
         >
-          {loading ? (
-            <>
-              Logging in...
-            </>
-          ) : (
-            "Login"
-          )}
+          {loading ? <>Logging in...</> : "Login"}
         </button>
 
         <p className="text-center mt-4 text-sm">
