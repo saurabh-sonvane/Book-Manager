@@ -1,65 +1,34 @@
 "use client";
+
 import { useEffect, useState } from "react";
+import toast from "react-hot-toast";
+import { useRouter } from "next/navigation";
+
+import BookForm from "./components/BookForm";
+import BookFilter from "./components/BookFilter";
+import BookGrid from "./components/BookGrid";
+
+import {
+  fetchBooksAPI,
+  addBookAPI,
+  deleteBookAPI,
+  updateBookStatusAPI,
+} from "../services/bookService";
 
 export default function Dashboard() {
+  const router = useRouter();
+
   const [books, setBooks] = useState([]);
-  const [title, setTitle] = useState("");
-  const [author, setAuthor] = useState("");
-  const [status, setStatus] = useState("want");
+  const [filter, setFilter] = useState("all");
 
+  // Fetch books
   const fetchBooks = async () => {
-    const res = await fetch("/api/auth/books");
-    const data = await res.json();
-    setBooks(data);
-  };
-
-  const addBook = async () => {
-    if (!title || !author) {
-      alert("Please enter title and author");
-      return;
+    try {
+      const data = await fetchBooksAPI();
+      setBooks(data);
+    } catch {
+      toast.error("Failed to load books");
     }
-
-    const res = await fetch("/api/auth/books", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ title, author, status }),
-    });
-
-    if (res.ok) {
-      const newBook = await res.json();
-
-      setBooks((prev) => [...prev, newBook]);
-
-      setTitle("");
-      setAuthor("");
-      setStatus("want");
-    }
-  };
-
-  const deleteBook = async (id) => {
-    await fetch(`/api/auth/books/${id}`, {
-      method: "DELETE",
-    });
-
-    setBooks((prev) => prev.filter((book) => book._id !== id));
-  };
-
-  const updateStatus = async (id, newStatus) => {
-    await fetch(`/api/auth/books/${id}`, {
-      method: "PUT",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ status: newStatus }),
-    });
-
-    setBooks((prev) =>
-      prev.map((book) =>
-        book._id === id ? { ...book, status: newStatus } : book
-      )
-    );
   };
 
   useEffect(() => {
@@ -67,93 +36,92 @@ export default function Dashboard() {
     fetchBooks();
   }, []);
 
+  // Add book
+  const addBook = async (book) => {
+    try {
+      const newBook = await addBookAPI(book);
+      setBooks((prev) => [...prev, newBook]);
+      toast.success("Book added");
+    } catch {
+      toast.error("Failed to add book");
+    }
+  };
+
+  // Delete book
+  const deleteBook = async (id) => {
+    try {
+      await deleteBookAPI(id);
+      setBooks((prev) => prev.filter((b) => b._id !== id));
+      toast.success("Book deleted");
+    } catch {
+      toast.error("Failed to delete book");
+    }
+  };
+
+  // Update status
+  const updateStatus = async (id, status) => {
+    try {
+      await updateBookStatusAPI(id, status);
+
+      setBooks((prev) =>
+        prev.map((book) =>
+          book._id === id ? { ...book, status } : book
+        )
+      );
+
+      toast.success("Status updated");
+    } catch {
+      toast.error("Failed to update status");
+    }
+  };
+
+  // Logout
+  const logout = async () => {
+    await fetch("/api/auth/logout", { method: "POST" });
+    toast.success("Logged out");
+    router.push("/login");
+  };
+
+  const filteredBooks =
+    filter === "all"
+      ? books
+      : books.filter((book) => book.status === filter);
+
   return (
-    <div className="p-6 md:p-10 bg-gray-50 min-h-screen text-black">
+    <div className="bg-gray-50 min-h-screen text-black">
 
-      <h1 className="text-3xl font-bold mb-6">📚 My Books</h1>
+      {/* Header */}
 
-      {/* Add Book Form */}
-
-      <div className="flex flex-col md:flex-row gap-4 mb-8">
-
-        <input
-          value={title}
-          className="p-3 border rounded-lg flex-1"
-          placeholder="Book Title"
-          onChange={(e) => setTitle(e.target.value)}
-        />
-
-        <input
-          value={author}
-          className="p-3 border rounded-lg flex-1"
-          placeholder="Author"
-          onChange={(e) => setAuthor(e.target.value)}
-        />
-
-        <select
-          value={status}
-          onChange={(e) => setStatus(e.target.value)}
-          className="p-3 border rounded-lg bg-white"
-        >
-          <option value="want">📖 Want to Read</option>
-          <option value="reading">📘 Reading</option>
-          <option value="completed">✅ Completed</option>
-        </select>
+      <div className="flex justify-between items-center mb-10 shadow-lg p-6">
+        <h1 className="text-3xl font-bold">📚 My Books</h1>
 
         <button
-          onClick={addBook}
-          className="bg-green-600 text-white px-6 py-3 rounded-lg hover:bg-green-700 transition"
+          onClick={logout}
+          className="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 hover:cursor-pointer"
         >
-          Add
+          Logout
         </button>
-
       </div>
 
-      {/* Books Grid */}
+      {/* Add Book */}
 
-      <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+      <BookForm addBook={addBook} />
 
-        {books.length === 0 ? (
-          <p className="text-gray-500">No books added yet.</p>
-        ) : (
-          books.map((book) => (
-            <div
-              key={book._id}
-              className="relative bg-white p-5 rounded-xl shadow hover:shadow-lg transition"
-            >
+      {/* Filter */}
 
-              {/* Delete Button */}
+      <BookFilter
+        filter={filter}
+        setFilter={setFilter}
+        count={filteredBooks.length}
+      />
 
-              <button
-                onClick={() => deleteBook(book._id)}
-                className="absolute top-3 right-3 text-red-500 hover:text-red-700"
-              >
-                🗑️
-              </button>
+      {/* Books */}
 
-              <h2 className="font-semibold text-lg">{book.title}</h2>
-
-              <p className="text-gray-600 mb-3">{book.author}</p>
-
-              {/* Status Dropdown */}
-
-              <select
-                value={book.status}
-                onChange={(e) =>
-                  updateStatus(book._id, e.target.value)
-                }
-                className="w-full p-2 border rounded-md bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500"
-              >
-                <option value="want">📖 Want to Read</option>
-                <option value="reading">📘 Reading</option>
-                <option value="completed">✅ Completed</option>
-              </select>
-
-            </div>
-          ))
-        )}
-
-      </div>
+      <BookGrid
+        books={filteredBooks}
+        deleteBook={deleteBook}
+        updateStatus={updateStatus}
+      />
 
     </div>
   );

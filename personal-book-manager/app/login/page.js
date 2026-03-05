@@ -1,6 +1,7 @@
 "use client";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import toast from "react-hot-toast";
 
 export default function Login() {
   const router = useRouter();
@@ -20,16 +21,17 @@ export default function Login() {
     const data = await res.json();
 
     if (res.ok) {
-      window.location.href = "/dashboard";
-      // router.push("/dashboard");
+      toast.success("Login successful");
+      router.push("/dashboard");
     } else {
-      alert(data.message);
+      toast.error(data.message || "Login failed");
     }
   };
 
   return (
     <div className="flex items-center justify-center min-h-screen bg-gray-100 px-4">
       <div className="bg-white p-8 rounded-xl shadow-lg w-full max-w-md text-black">
+
         <h2 className="text-2xl font-bold mb-6 text-center">Login</h2>
 
         <input
@@ -47,10 +49,21 @@ export default function Login() {
 
         <button
           onClick={handleLogin}
-          className="w-full bg-blue-600 text-white py-3 rounded-lg hover:bg-blue-700"
+          className="w-full bg-blue-600 text-white py-3 rounded-lg hover:bg-blue-700 hover:cursor-pointer"
         >
           Login
         </button>
+
+        <p className="text-center mt-4 text-sm">
+          Don&apos;t have an account?{" "}
+          <span
+            onClick={() => router.push("/signup")}
+            className="text-blue-600 cursor-pointer"
+          >
+            Sign Up
+          </span>
+        </p>
+
       </div>
     </div>
   );

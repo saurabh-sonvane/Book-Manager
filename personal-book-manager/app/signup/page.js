@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import toast from "react-hot-toast";
 
 export default function Signup() {
   const router = useRouter();
@@ -13,25 +14,34 @@ export default function Signup() {
   });
 
   const handleSignup = async () => {
-    await fetch("/api/auth/signup", {
+
+    const res = await fetch("/api/auth/signup", {
       method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
       body: JSON.stringify(form),
     });
 
-    router.push("/login");
+    if (res.ok) {
+      toast.success("Account created successfully");
+      router.push("/login");
+    } else {
+      toast.error("Signup failed");
+    }
   };
 
   return (
     <div className="flex items-center justify-center min-h-screen bg-gray-100 px-4 text-black">
       <div className="bg-white shadow-xl rounded-xl p-8 w-full max-w-md">
 
-        <h2 className="text-2xl font-bold mb-6 text-center text-black">
+        <h2 className="text-2xl font-bold mb-6 text-center">
           Create Account
         </h2>
 
         <input
           placeholder="Name"
-          className="border p-3 w-full mb-4 rounded text-black"
+          className="border p-3 w-full mb-4 rounded"
           onChange={(e) =>
             setForm({ ...form, name: e.target.value })
           }
@@ -39,7 +49,7 @@ export default function Signup() {
 
         <input
           placeholder="Email"
-          className="border p-3 w-full mb-4 rounded text-black"
+          className="border p-3 w-full mb-4 rounded"
           onChange={(e) =>
             setForm({ ...form, email: e.target.value })
           }
@@ -56,10 +66,20 @@ export default function Signup() {
 
         <button
           onClick={handleSignup}
-          className="w-full bg-green-600 text-white py-3 rounded hover:bg-green-700"
+          className="w-full  bg-blue-600 text-white py-3 rounded-lg hover:bg-blue-700 hover:cursor-pointer"
         >
           Sign Up
         </button>
+
+        <p className="text-center mt-4 text-sm">
+          Already have an account?{" "}
+          <span
+            onClick={() => router.push("/login")}
+            className="text-blue-600 cursor-pointer"
+          >
+            Login
+          </span>
+        </p>
 
       </div>
     </div>
