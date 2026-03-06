@@ -9,6 +9,7 @@ export const fetchBooksAPI = async () => {
 };
 
 export const addBookAPI = async (book) => {
+ // console.log(book)
   const res = await fetch("/api/auth/books", {
     method: "POST",
     headers: {

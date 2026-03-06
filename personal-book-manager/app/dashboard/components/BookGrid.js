@@ -26,6 +26,27 @@ export default function BookGrid({ books, deleteBook, updateStatus }) {
 
             <p className="text-gray-600 mb-3">{book.author}</p>
 
+            {book.tags?.length > 0 && (
+              <div className="flex flex-wrap gap-2 mb-3">
+
+                {book.tags.slice(0, 2).map((tag, index) => (
+                  <span
+                    key={index}
+                    className="text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded-md"
+                  >
+                    {tag}
+                  </span>
+                ))}
+
+                {book.tags.length > 2 && (
+                  <span className="text-xs text-gray-500">
+                    ...
+                  </span>
+                )}
+
+              </div>
+            )}
+
             <select
               value={book.status}
               onChange={(e) =>

@@ -7,23 +7,31 @@ export default function BookForm({ addBook }) {
   const [title, setTitle] = useState("");
   const [author, setAuthor] = useState("");
   const [status, setStatus] = useState("want");
+  const [tags, setTags] = useState("");
   const [loading, setLoading] = useState(false);
 
   const handleAdd = () => {
-    if (!title || !author) {
-      toast.error("Please enter title and author");
+
+    const tagsarray = tags
+      .split(",")
+      .map((tag) => tag.trim())
+      .filter(Boolean);
+
+    if (!title || !author || tagsarray.length === 0) {
+      toast.error("Please Enter all Details");
       return;
     }
 
     setLoading(true);
 
-    addBook({ title, author, status });
+    addBook({ title, author, tags: tagsarray, status });
 
     setLoading(false);
 
     setTitle("");
     setAuthor("");
     setStatus("want");
+    setTags("");
   };
 
   return (
@@ -33,7 +41,7 @@ export default function BookForm({ addBook }) {
           <div className="w-10 h-10 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
         </div>
       ) : (
-        <div className="p-6 md:p-10 flex flex-col md:flex-row gap-4 mb-4">
+        <div className="p-6 md:p-10 flex flex-col md:flex-row gap-4 mb-4 flex-wrap">
           <input
             value={title}
             className="p-3 border rounded-lg flex-1"
@@ -46,6 +54,13 @@ export default function BookForm({ addBook }) {
             className="p-3 border rounded-lg flex-1"
             placeholder="Author"
             onChange={(e) => setAuthor(e.target.value)}
+          />
+
+          <input
+            value={tags}
+            className="p-3 border rounded-lg flex-1"
+            placeholder="Tags (comma separated)"
+            onChange={(e) => setTags(e.target.value)}
           />
 
           <select
